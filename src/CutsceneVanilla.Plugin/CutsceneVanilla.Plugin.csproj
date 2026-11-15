@@ -1,0 +1,43 @@
+<Project Sdk="Dalamud.NET.Sdk/15.0.0">
+  <PropertyGroup>
+    <AssemblyName>CutsceneVanilla</AssemblyName>
+    <RootNamespace>CutsceneVanilla.Plugin</RootNamespace>
+    <Version>0.1.0.0</Version>
+    <Description>Turns chosen Penumbra mods off while a cutscene plays and restores them afterwards, so cutscenes show the normal emotes.</Description>
+    <TargetFramework>net10.0-windows10.0.26100.0</TargetFramework>
+    <PlatformTarget>x64</PlatformTarget>
+    <Nullable>enable</Nullable>
+    <LangVersion>13</LangVersion>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <EnableWindowsTargeting>true</EnableWindowsTargeting>
+    <OutputPath>..\..\..\_shared\Build\CutsceneVanilla\</OutputPath>
+    <Author>SloppyMods</Author>
+    <Name>Cutscene Vanilla</Name>
+    <Punchline>Cutscenes show the normal emotes, not your animation mods</Punchline>
+    <DalamudApiLevel>15</DalamudApiLevel>
+    <Tags>penumbra, emote, cutscene</Tags>
+    <CategoryTags>utility</CategoryTags>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\CutsceneVanilla.Core\CutsceneVanilla.Core.csproj" />
+    <!-- Typed IPC subscribers. Shipped with the plugin, as Glamourer and Customize+ do. Talks to Penumbra over IPC only. -->
+    <Reference Include="Penumbra.Api"><HintPath>..\..\lib\Penumbra.Api.dll</HintPath><Private>true</Private></Reference>
+    <Reference Include="Luna"><HintPath>..\..\lib\Luna.dll</HintPath><Private>true</Private></Reference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Luna.dll needs these at runtime and Dalamud does not provide them (copied from Penumbra 1.7.2.1). -->
+    <None Include="..\..\lib\Microsoft.Extensions.*.dll" Link="%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+  <!-- Luna.dll drags Dalamud's own assemblies into the output; shipping private copies of those risks type-load clashes. Keep only ours. -->
+  <Target Name="PruneDalamudCopies" AfterTargets="Build">
+    <ItemGroup>
+      <_Keep Include="CutsceneVanilla.dll;CutsceneVanilla.Core.dll;CutsceneVanilla.json;CutsceneVanilla.deps.json;CutsceneVanilla.pdb;CutsceneVanilla.Core.pdb;Penumbra.Api.dll;Luna.dll;Microsoft.Extensions.DependencyInjection.Abstractions.dll;Microsoft.Extensions.DependencyInjection.dll;Microsoft.Extensions.Logging.Abstractions.dll;Microsoft.Extensions.Logging.dll;Microsoft.Extensions.Options.dll;Microsoft.Extensions.Primitives.dll" />
+      <_OutFiles Include="$(OutDir)*.dll;$(OutDir)*.xml" />
+      <_Prune Include="@(_OutFiles)" Exclude="@(_Keep->'$(OutDir)%(Identity)')" />
+    </ItemGroup>
+    <Delete Files="@(_Prune)" />
+  </Target>
+</Project>
